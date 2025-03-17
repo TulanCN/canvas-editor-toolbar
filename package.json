@@ -1,0 +1,46 @@
+{
+  "name": "@tulancn/canvas-editor-toolbar",
+  "version": "0.1.2",
+  "description": "一个基于canvas-editor的富文本编辑器工具栏组件",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src/components",
+    "src/assets",
+    "src/types",
+    "src/index.ts"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "canvas-editor",
+    "rich-text",
+    "editor",
+    "toolbar",
+    "vue3"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/canvas-editor-toolbar"
+  },
+  "peerDependencies": {
+    "@hufe921/canvas-editor": "^0.9.105",
+    "element-plus": "^2.9.6",
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "@vitejs/plugin-vue": "^4.4.0",
+    "typescript": "^5.2.2",
+    "vite": "^4.4.11",
+    "vue-tsc": "^1.8.15"
+  }
+}

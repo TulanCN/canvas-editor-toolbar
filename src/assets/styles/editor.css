@@ -1,0 +1,33 @@
+/* 编辑器右键菜单图标样式 */
+
+/* AI润色图标 */
+.ce-contextmenu-ai-paraphrase {
+  background-image: url(../icons/polish.svg);
+  background-size: 16px 16px;
+  background-position: center left;
+  background-repeat: no-repeat;
+}
+
+/* AI扩写图标 */
+.ce-contextmenu-ai-expand {
+  background-image: url(../icons/expand.svg);
+  background-size: 16px 16px;
+  background-position: center left;
+  background-repeat: no-repeat;
+}
+
+/* AI缩写图标 */
+.ce-contextmenu-ai-shorten {
+  background-image: url(../icons/shorten.svg);
+  background-size: 16px 16px;
+  background-position: center left;
+  background-repeat: no-repeat;
+}
+
+/* 语法检测图标 */
+.ce-contextmenu-grammar-check {
+  background-image: url(../icons/grammar.svg);
+  background-size: 16px 16px;
+  background-position: center left;
+  background-repeat: no-repeat;
+} 
