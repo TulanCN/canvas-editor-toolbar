@@ -9,6 +9,7 @@
 - 字体样式管理（字体、字号、颜色等）
 - 插入功能（图片、超链接、LaTeX公式等）
 - 自动保存和导出为Word文档
+- 内置中英文国际化支持
 - 响应式设计，支持移动设备
 
 ## 安装
@@ -28,6 +29,7 @@ npm install @hufe921/canvas-editor element-plus
 ```vue
 <template>
   <div class="editor-container">
+    <!-- locale参数可选，默认为中文 -->
     <EditorToolbar v-if="editorReady" :editor="editor" @save="handleSave" />
     <div ref="editorContainer" class="editor-content"></div>
   </div>
@@ -41,6 +43,8 @@ import { EditorToolbar } from '@tulancn/canvas-editor-toolbar'
 const editorContainer = ref(null)
 const editor = ref(null)
 const editorReady = ref(false)
+// 如需切换语言，可以使用如下代码
+// const currentLocale = ref('zh-CN') // 默认使用中文
 
 onMounted(() => {
   if (editorContainer.value) {
@@ -67,6 +71,11 @@ onMounted(() => {
     editorReady.value = true
   }
 })
+
+// 切换语言的方法（可选）
+// const switchLanguage = (locale) => {
+//   currentLocale.value = locale // 'zh-CN' 或 'en-US'
+// }
 
 const handleSave = (content) => {
   console.log('文档内容已保存:', content)
@@ -106,9 +115,63 @@ app.mount('#app')
 
 ```vue
 <template>
+  <!-- locale参数可选，默认为中文 -->
   <EditorToolbar :editor="editor" @save="handleSave" />
+  
+  <!-- 如需使用英文 -->
+  <!-- <EditorToolbar :editor="editor" @save="handleSave" locale="en-US" /> -->
 </template>
 ```
+
+## 国际化支持
+
+工具栏内置了中文和英文的支持，默认使用中文。可以通过`locale`属性来控制当前使用的语言：
+
+```vue
+<template>
+  <!-- 默认使用中文，不需要设置locale属性 -->
+  <EditorToolbar :editor="editor" />
+  
+  <!-- 明确指定使用中文 -->
+  <EditorToolbar :editor="editor" locale="zh-CN" />
+  
+  <!-- 使用英文 -->
+  <EditorToolbar :editor="editor" locale="en-US" />
+  
+  <!-- 动态切换语言 -->
+  <div class="language-switcher">
+    <button @click="switchToZhCN">中文</button>
+    <button @click="switchToEnUS">English</button>
+  </div>
+  <EditorToolbar :editor="editor" :locale="currentLocale" />
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+// 默认为中文
+const currentLocale = ref('zh-CN')
+
+const switchToZhCN = () => {
+  currentLocale.value = 'zh-CN'
+}
+
+const switchToEnUS = () => {
+  currentLocale.value = 'en-US'
+}
+</script>
+```
+
+### 支持的语言
+
+目前支持的语言有：
+
+- 中文：`zh-CN`
+- 英文：`en-US`
+
+### 添加更多语言
+
+如果需要添加更多语言支持，可以通过fork本项目并添加新的语言文件来实现。
 
 ## 完整示例
 
@@ -117,7 +180,14 @@ app.mount('#app')
 ```vue
 <template>
   <div class="page">
-    <EditorToolbar v-if="editorReady" :editor="editor" @save="handleSave" />
+    <!-- 添加自定义语言切换按钮 -->
+    <div class="language-switcher">
+      <el-button size="small" @click="switchLanguage('zh-CN')">中文</el-button>
+      <el-button size="small" @click="switchLanguage('en-US')">English</el-button>
+    </div>
+  
+    <!-- 通过locale属性控制语言，不设置时默认为中文 -->
+    <EditorToolbar v-if="editorReady" :editor="editor" @save="handleSave" :locale="currentLocale" />
     <div class="container">
       <div ref="editorContainer" class="canvas-editor"></div>
     </div>
@@ -133,6 +203,12 @@ import { ElMessage } from 'element-plus'
 const editorContainer = ref(null)
 const editor = ref(null)
 const editorReady = ref(false)
+const currentLocale = ref('zh-CN')
+
+// 语言切换方法
+const switchLanguage = (locale) => {
+  currentLocale.value = locale
+}
 
 onMounted(() => {
   if (editorContainer.value) {
@@ -225,6 +301,15 @@ const handleSave = (content) => {
   flex-direction: column;
 }
 
+.language-switcher {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 16px;
+  gap: 8px;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+}
+
 .container {
   flex: 1;
   display: flex;
@@ -245,9 +330,10 @@ const handleSave = (content) => {
 
 ### Props
 
-| 属性名 | 类型 | 说明 |
-| --- | --- | --- |
-| editor | Editor | Canvas Editor实例，必须传入 |
+| 属性名 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| editor | Editor | - | Canvas Editor实例，必须传入 |
+| locale | string | 'zh-CN' | 【可选】控制工具栏的语言，支持 'zh-CN'(中文) 和 'en-US'(英文)，默认为中文 |
 
 ### Events
 
@@ -298,10 +384,19 @@ const getContent = () => {
     <div class="custom-buttons">
       <button @click="handleCustomAction">自定义按钮</button>
     </div>
+    <!-- locale属性可选，不设置时默认为中文 -->
     <EditorToolbar :editor="editor" @save="onSave" />
   </div>
 </template>
 ```
+
+### 4. 如何添加新的语言支持？
+
+要添加新的语言支持，需要按照以下步骤进行：
+
+1. 创建新的语言文件，参照 `src/i18n/locales/zh-CN.ts` 的结构
+2. 在 `src/i18n/index.ts` 中注册新的语言
+3. 在使用时将 `locale` 属性设置为新添加的语言代码
 
 ## 依赖项
 

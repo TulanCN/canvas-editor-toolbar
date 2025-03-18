@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { Document, Link } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { t } from '@/i18n'
 
 interface Props {
   visible: boolean
@@ -41,13 +42,13 @@ watch(() => props.initialText, (newVal) => {
 // 确认添加超链接
 const confirmAddLink = () => {
   if (!linkText.value || !linkUrl.value) {
-    ElMessage.warning('请填写链接文本和地址')
+    ElMessage.warning(t('dialog.hyperlink.warning.emptyFields'))
     return
   }
 
   // 验证URL格式
   if (!isValidUrl(linkUrl.value)) {
-    ElMessage.warning('请输入有效的链接地址')
+    ElMessage.warning(t('dialog.hyperlink.warning.invalidUrl'))
     return
   }
 
@@ -97,7 +98,7 @@ if (props.visible && props.initialText) {
 <template>
   <el-dialog
     v-model="dialogVisible"
-    title="插入超链接"
+    :title="t('dialog.hyperlink.title')"
     width="480px"
     :modal="true"
     :append-to-body="true"
@@ -108,35 +109,35 @@ if (props.visible && props.initialText) {
     @update:modelValue="updateVisible"
   >
     <el-form :model="{ linkText, linkUrl }" label-position="top" class="hyperlink-form">
-      <el-form-item label="链接文本" prop="linkText">
+      <el-form-item :label="t('dialog.hyperlink.text')" prop="linkText">
         <el-input
           v-model="linkText"
-          placeholder="请输入链接显示的文本"
+          :placeholder="t('dialog.hyperlink.textPlaceholder')"
           clearable
         >
           <template #prefix>
             <el-icon><Document /></el-icon>
           </template>
         </el-input>
-        <div class="form-item-help">链接在文档中显示的文字</div>
+        <div class="form-item-help">{{ t('dialog.hyperlink.textHelp') }}</div>
       </el-form-item>
-      <el-form-item label="链接地址" prop="linkUrl">
+      <el-form-item :label="t('dialog.hyperlink.url')" prop="linkUrl">
         <el-input
           v-model="linkUrl"
-          placeholder="请输入链接地址，例如：https://example.com"
+          :placeholder="t('dialog.hyperlink.urlPlaceholder')"
           clearable
         >
           <template #prefix>
             <el-icon><Link /></el-icon>
           </template>
         </el-input>
-        <div class="form-item-help">如未添加协议，将自动添加 http://</div>
+        <div class="form-item-help">{{ t('dialog.hyperlink.urlHelp') }}</div>
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button class="cancel-btn" @click="cancelAddLink">取消</el-button>
-        <el-button class="confirm-btn" type="primary" @click="confirmAddLink">确定</el-button>
+        <el-button class="cancel-btn" @click="cancelAddLink">{{ t('dialog.hyperlink.cancel') }}</el-button>
+        <el-button class="confirm-btn" type="primary" @click="confirmAddLink">{{ t('dialog.hyperlink.confirm') }}</el-button>
       </div>
     </template>
   </el-dialog>

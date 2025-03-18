@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted} from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import type Editor from '@hufe921/canvas-editor'
 import { ListType, RowFlex, ListStyle, ElementType, TextDecorationStyle, TitleLevel } from '@hufe921/canvas-editor'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import HyperlinkDialog from './HyperlinkDialog.vue'
+import { t, setLocale } from '@/i18n'
 
 // 导入本地SVG图标
 import UndoIcon from '@/assets/images/undo.svg'
@@ -36,10 +37,21 @@ import LaTexIcon from '@/assets/images/latex.svg'  // 导入LaTeX图标
 
 interface Props {
   editor?: Editor
+  locale?: string // 添加locale属性，用于外部控制语言
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits(['save'])  // 定义保存事件
+
+// 监听locale属性变化，切换语言
+watch(() => props.locale, (newLocale) => {
+  if (newLocale) {
+    setLocale(newLocale)
+  } else {
+    // 默认使用中文
+    setLocale('zh-CN')
+  }
+}, { immediate: true })
 
 // 当前选中的字体和字号
 const currentFont = ref('Microsoft YaHei')
@@ -273,10 +285,10 @@ const handleSave = async () => {
     emit('save', content)
 
     // 提示成功
-    ElMessage.success('保存成功')
+    ElMessage.success(t('toolbar.saveSuccess'))
   } catch (error) {
     console.error('保存文档失败:', error)
-    ElMessage.error('保存失败，请重试')
+    ElMessage.error(t('toolbar.saveFailed'))
   } finally {
     isSaving.value = false
   }
@@ -288,24 +300,24 @@ const handleExportWord = () => {
 
   try {
     // 弹出对话框让用户输入文件名
-    ElMessageBox.prompt('请输入文件名', '导出Word文档', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    ElMessageBox.prompt(t('toolbar.exportPrompt'), t('toolbar.exportTitle'), {
+      confirmButtonText: t('dialog.hyperlink.confirm'),
+      cancelButtonText: t('dialog.hyperlink.cancel'),
       inputPattern: /^[\w\u4e00-\u9fa5\-_]+$/,
-      inputErrorMessage: '文件名不能包含特殊字符'
+      inputErrorMessage: t('toolbar.fileNameError')
     }).then(({ value }) => {
       // 执行导出命令
       // @ts-ignore 插件方法在类型定义中不存在，但实际可用
       props.editor?.command.executeExportDocx({
         fileName: value || '文档'
       })
-      ElMessage.success('导出成功')
+      ElMessage.success(t('toolbar.exportSuccess'))
     }).catch(() => {
       // 用户取消操作
     })
   } catch (error) {
     console.error('导出文档失败:', error)
-    ElMessage.error('导出失败，请重试')
+    ElMessage.error(t('toolbar.saveFailed'))
   }
 }
 
@@ -508,11 +520,11 @@ const handleLaTeX = () => {
   if (!props.editor) return
 
   // 弹出对话框让用户输入LaTeX公式
-  ElMessageBox.prompt('请输入LaTeX公式', 'LaTeX公式', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.prompt(t('toolbar.latexPrompt'), t('toolbar.latexTitle'), {
+    confirmButtonText: t('dialog.hyperlink.confirm'),
+    cancelButtonText: t('dialog.hyperlink.cancel'),
     inputType: 'textarea',
-    inputPlaceholder: '例如：E = mc^2',
+    inputPlaceholder: t('toolbar.latexPlaceholder'),
     roundButton: true,
     customClass: 'latex-dialog'
   }).then(({ value }) => {
@@ -526,7 +538,7 @@ const handleLaTeX = () => {
       }
     ])
 
-    ElMessage.success('公式插入成功')
+    ElMessage.success(t('toolbar.insertSuccess'))
   }).catch(() => {
     // 用户取消操作
   })
@@ -547,37 +559,37 @@ const preserveFocus = (event: MouseEvent) => {
       <el-button
         @click="handleSave"
         @mousedown="preserveFocus"
-        title="保存文档"
+        :title="t('toolbar.save')"
         :loading="isSaving"
         type="primary"
       >
-        <img :src="SaveIcon" class="icon" alt="保存文档" />
-        <span class="save-text">保存</span>
+        <img :src="SaveIcon" class="icon" :alt="t('toolbar.save')" />
+        <span class="save-text">{{ t('toolbar.save') }}</span>
       </el-button>
 
       <!-- 导出Word按钮 -->
       <el-button
         @click="handleExportWord"
         @mousedown="preserveFocus"
-        title="导出Word文档"
+        :title="t('toolbar.export')"
         type="primary"
       >
-        <img :src="ExportIcon" class="icon" alt="导出Word文档" />
-        <span class="export-text">导出</span>
+        <img :src="ExportIcon" class="icon" :alt="t('toolbar.export')" />
+        <span class="export-text">{{ t('toolbar.export') }}</span>
       </el-button>
 
-      <el-button @click="handleUndo" @mousedown="preserveFocus" title="撤销">
-        <img :src="UndoIcon" class="icon" alt="撤销" />
+      <el-button @click="handleUndo" @mousedown="preserveFocus" :title="t('toolbar.undo')">
+        <img :src="UndoIcon" class="icon" :alt="t('toolbar.undo')" />
       </el-button>
 
-      <el-button @click="handleRedo" @mousedown="preserveFocus" title="重做">
-        <img :src="RedoIcon" class="icon" alt="重做" />
+      <el-button @click="handleRedo" @mousedown="preserveFocus" :title="t('toolbar.redo')">
+        <img :src="RedoIcon" class="icon" :alt="t('toolbar.redo')" />
       </el-button>
-      <el-button @click="handleFormatPainter" @mousedown="preserveFocus" title="格式刷(双击可连续使用)">
-        <img :src="PainterIcon" class="icon" alt="格式刷" />
+      <el-button @click="handleFormatPainter" @mousedown="preserveFocus" :title="t('toolbar.formatPainter')">
+        <img :src="PainterIcon" class="icon" :alt="t('toolbar.formatPainter')" />
       </el-button>
-      <el-button @click="handleClearFormat" @mousedown="preserveFocus" title="清除格式">
-        <img :src="ClearFormatIcon" class="icon" alt="清除格式" />
+      <el-button @click="handleClearFormat" @mousedown="preserveFocus" :title="t('toolbar.clearFormat')">
+        <img :src="ClearFormatIcon" class="icon" :alt="t('toolbar.clearFormat')" />
       </el-button>
 
     <el-divider direction="vertical" />
@@ -588,7 +600,7 @@ const preserveFocus = (event: MouseEvent) => {
         size="small"
         class="font-select"
         @change="handleFontFamily"
-        title="字体"
+        :title="t('toolbar.font')"
         popper-class="font-select-dropdown"
         :popper-append-to-body="true"
         filterable
@@ -608,7 +620,7 @@ const preserveFocus = (event: MouseEvent) => {
         size="small"
         class="size-select"
         @change="handleFontSize"
-        title="字号"
+        :title="t('toolbar.fontSize')"
         popper-class="size-select-dropdown"
         :popper-append-to-body="true"
         filterable
@@ -623,41 +635,41 @@ const preserveFocus = (event: MouseEvent) => {
         </el-option>
       </el-select>
       <!-- 放大字体 -->
-      <el-button @click="handleFontSizeAdd" @mousedown="preserveFocus" title="增大字号">
-        <img :src="FontSizeAddIcon" class="icon" alt="放大字体" />
+      <el-button @click="handleFontSizeAdd" @mousedown="preserveFocus" :title="t('toolbar.increaseFontSize')">
+        <img :src="FontSizeAddIcon" class="icon" :alt="t('toolbar.increaseFontSize')" />
       </el-button>
       <!-- 缩小字体 -->
-      <el-button @click="handleFontSizeMinus" @mousedown="preserveFocus" title="减小字号">
-        <img :src="FontSizeMinusIcon" class="icon" alt="缩小字体" />
+      <el-button @click="handleFontSizeMinus" @mousedown="preserveFocus" :title="t('toolbar.decreaseFontSize')">
+        <img :src="FontSizeMinusIcon" class="icon" :alt="t('toolbar.decreaseFontSize')" />
       </el-button>
       <!-- 加粗 -->
       <el-button
         @click="handleBold"
         @mousedown="preserveFocus"
-        title="加粗"
+        :title="t('toolbar.bold')"
         :class="{ 'is-active-button': isBold }"
       >
-        <img :src="BoldIcon" class="icon" alt="加粗" />
+        <img :src="BoldIcon" class="icon" :alt="t('toolbar.bold')" />
       </el-button>
       <!-- 斜体 -->
       <el-button
         @click="handleItalic"
         @mousedown="preserveFocus"
-        title="斜体"
+        :title="t('toolbar.italic')"
         :class="{ 'is-active-button': isItalic }"
       >
-        <img :src="ItalicIcon" class="icon" alt="斜体" />
+        <img :src="ItalicIcon" class="icon" :alt="t('toolbar.italic')" />
       </el-button>
 
       <!-- 下划线 -->
       <el-dropdown @command="handleUnderline" trigger="click">
-        <el-button @mousedown="preserveFocus" title="下划线" :class="{ 'is-active-button': isUnderline }">
-          <img :src="UnderlineIcon" class="icon" alt="下划线" />
+        <el-button @mousedown="preserveFocus" :title="t('toolbar.underline')" :class="{ 'is-active-button': isUnderline }">
+          <img :src="UnderlineIcon" class="icon" :alt="t('toolbar.underline')" />
         </el-button>
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item :command="undefined">
-              <span>下划线</span>
+              <span>{{ t('toolbar.underline') }}</span>
             </el-dropdown-item>
             <el-dropdown-item
               v-for="style in underlineStyles"
@@ -665,7 +677,7 @@ const preserveFocus = (event: MouseEvent) => {
               :command="style.value"
             >
               <span :style="`text-decoration: underline ${style.value}`">
-                {{ style.label }}
+                {{ t(`underlineStyles.${style.value}`) }}
               </span>
             </el-dropdown-item>
           </el-dropdown-menu>
@@ -676,35 +688,35 @@ const preserveFocus = (event: MouseEvent) => {
       <el-button
         @click="handleStrikeout"
         @mousedown="preserveFocus"
-        title="删除线"
+        :title="t('toolbar.strikeout')"
         :class="{ 'is-active-button': isStrikeout }"
       >
-        <img :src="StrikeoutIcon" class="icon" alt="删除线" />
+        <img :src="StrikeoutIcon" class="icon" :alt="t('toolbar.strikeout')" />
       </el-button>
 
       <!-- 添加新的字体样式组 -->
       <el-button
         @click="handleSuperscript"
         @mousedown="preserveFocus"
-        title="上标"
+        :title="t('toolbar.superscript')"
         :class="{ 'is-active-button': isSuperscript }"
       >
-        <img :src="SuperscriptIcon" class="icon" alt="上标" />
+        <img :src="SuperscriptIcon" class="icon" :alt="t('toolbar.superscript')" />
       </el-button>
       <el-button
         @click="handleSubscript"
         @mousedown="preserveFocus"
-        title="下标"
+        :title="t('toolbar.subscript')"
         :class="{ 'is-active-button': isSubscript }"
       >
-        <img :src="SubscriptIcon" class="icon" alt="下标" />
+        <img :src="SubscriptIcon" class="icon" :alt="t('toolbar.subscript')" />
       </el-button>
 
       <!-- 字体颜色 -->
       <div class="color-picker-wrapper">
-        <el-button class="color-button" @mousedown="preserveFocus" title="字体颜色">
+        <el-button class="color-button" @mousedown="preserveFocus" :title="t('toolbar.fontColor')">
           <div class="color-button-content word-style">
-            <img :src="ColorIcon" class="icon" alt="字体颜色" />
+            <img :src="ColorIcon" class="icon" :alt="t('toolbar.fontColor')" />
             <div class="color-indicator" :style="{ backgroundColor: fontColor }"></div>
           </div>
           <el-color-picker
@@ -719,9 +731,9 @@ const preserveFocus = (event: MouseEvent) => {
 
       <!-- 高亮颜色 -->
       <div class="color-picker-wrapper">
-        <el-button class="color-button" @mousedown="preserveFocus" title="高亮">
+        <el-button class="color-button" @mousedown="preserveFocus" :title="t('toolbar.highlight')">
           <div class="color-button-content word-style">
-            <img :src="HighlightIcon" class="icon" alt="高亮" />
+            <img :src="HighlightIcon" class="icon" :alt="t('toolbar.highlight')" />
             <div class="color-indicator" :style="{ backgroundColor: highlightColor }"></div>
           </div>
           <el-color-picker
@@ -743,7 +755,7 @@ const preserveFocus = (event: MouseEvent) => {
         size="small"
         class="title-select"
         @change="handleTitle"
-        title="标题"
+        :title="t('toolbar.title')"
         popper-class="title-select-dropdown"
         :popper-append-to-body="true"
         filterable
@@ -751,43 +763,43 @@ const preserveFocus = (event: MouseEvent) => {
         <el-option
           v-for="title in titleOptions"
           :key="title.value"
-          :label="title.label"
+          :label="title.value === 'normal' ? t('titleOptions.normal') : t(`titleOptions.title${title.value === TitleLevel.FIRST ? 1 : title.value === TitleLevel.SECOND ? 2 : title.value === TitleLevel.THIRD ? 3 : title.value === TitleLevel.FOURTH ? 4 : title.value === TitleLevel.FIFTH ? 5 : 6}`)"
           :value="title.value"
         >
-          <span :style="{ fontSize: title.fontSize }">{{ title.label }}</span>
+          <span :style="{ fontSize: title.fontSize }">{{ title.value === 'normal' ? t('titleOptions.normal') : t(`titleOptions.title${title.value === TitleLevel.FIRST ? 1 : title.value === TitleLevel.SECOND ? 2 : title.value === TitleLevel.THIRD ? 3 : title.value === TitleLevel.FOURTH ? 4 : title.value === TitleLevel.FIFTH ? 5 : 6}`) }}</span>
         </el-option>
       </el-select>
       <!-- 对齐方式 -->
       <el-button
         @click="handleAlignment('left')"
         @mousedown="preserveFocus"
-        title="左对齐"
+        :title="t('toolbar.alignLeft')"
         :class="{ 'is-active-button': currentAlignment === RowFlex.LEFT }"
       >
-        <img :src="LeftIcon" class="icon" alt="左对齐" />
+        <img :src="LeftIcon" class="icon" :alt="t('toolbar.alignLeft')" />
       </el-button>
       <el-button
         @click="handleAlignment('center')"
         @mousedown="preserveFocus"
-        title="居中对齐"
+        :title="t('toolbar.alignCenter')"
         :class="{ 'is-active-button': currentAlignment === RowFlex.CENTER }"
       >
-        <img :src="CenterIcon" class="icon" alt="居中对齐" />
+        <img :src="CenterIcon" class="icon" :alt="t('toolbar.alignCenter')" />
       </el-button>
 
       <el-button
         @click="handleAlignment('right')"
         @mousedown="preserveFocus"
-        title="右对齐"
+        :title="t('toolbar.alignRight')"
         :class="{ 'is-active-button': currentAlignment === RowFlex.RIGHT }"
       >
-        <img :src="RightIcon" class="icon" alt="右对齐" />
+        <img :src="RightIcon" class="icon" :alt="t('toolbar.alignRight')" />
       </el-button>
 
       <!-- 行间距 -->
       <el-dropdown @command="handleLineHeight">
-        <el-button @mousedown="preserveFocus" title="行间距" :class="{ 'is-active-button': currentLineHeight !== 1 }">
-          <img :src="RowMarginIcon" class="icon" alt="行间距" />
+        <el-button @mousedown="preserveFocus" :title="t('toolbar.lineHeight')" :class="{ 'is-active-button': currentLineHeight !== 1 }">
+          <img :src="RowMarginIcon" class="icon" :alt="t('toolbar.lineHeight')" />
         </el-button>
         <template #dropdown>
           <el-dropdown-menu>
@@ -805,8 +817,8 @@ const preserveFocus = (event: MouseEvent) => {
 
       <!-- 列表样式 -->
       <el-dropdown @command="handleList">
-        <el-button @mousedown="preserveFocus" title="列表" :class="{ 'is-active-button': currentListType !== null }">
-          <img :src="ListIcon" class="icon" alt="列表" />
+        <el-button @mousedown="preserveFocus" :title="t('toolbar.list')" :class="{ 'is-active-button': currentListType !== null }">
+          <img :src="ListIcon" class="icon" :alt="t('toolbar.list')" />
         </el-button>
         <template #dropdown>
           <el-dropdown-menu>
@@ -820,7 +832,7 @@ const preserveFocus = (event: MouseEvent) => {
                   currentListType === ListType.UL && currentListStyle === option.style)
               }"
             >
-              <span :style="`list-style-type: ${option.style}`">{{ option.label }}</span>
+              <span :style="`list-style-type: ${option.style}`">{{ t(`listOptions.${option.value}`) }}</span>
             </el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -829,8 +841,8 @@ const preserveFocus = (event: MouseEvent) => {
     <el-divider direction="vertical" />
 
     <!-- 插入功能组 -->
-    <el-button @click="handleImageButtonClick" @mousedown="preserveFocus" title="图片">
-      <img :src="ImageIcon" class="icon" alt="插入图片" />
+    <el-button @click="handleImageButtonClick" @mousedown="preserveFocus" :title="t('toolbar.image')">
+      <img :src="ImageIcon" class="icon" :alt="t('toolbar.image')" />
       <input
         ref="imageInput"
         type="file"
@@ -840,13 +852,13 @@ const preserveFocus = (event: MouseEvent) => {
       >
     </el-button>
 
-    <el-button @click="handleHyperlink" @mousedown="preserveFocus" title="超链接">
-      <img :src="HyperlinkIcon" class="icon" alt="插入链接" />
+    <el-button @click="handleHyperlink" @mousedown="preserveFocus" :title="t('toolbar.hyperlink')">
+      <img :src="HyperlinkIcon" class="icon" :alt="t('toolbar.hyperlink')" />
     </el-button>
 
     <!-- 添加LaTeX公式按钮 -->
-    <el-button @click="handleLaTeX" @mousedown="preserveFocus" title="LaTeX公式">
-      <img :src="LaTexIcon" class="icon" alt="LaTeX公式" />
+    <el-button @click="handleLaTeX" @mousedown="preserveFocus" :title="t('toolbar.latex')">
+      <img :src="LaTexIcon" class="icon" :alt="t('toolbar.latex')" />
     </el-button>
     </el-button-group>
   </div>
